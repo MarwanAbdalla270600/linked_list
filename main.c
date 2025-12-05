@@ -217,11 +217,6 @@ int compareAlphabetical(LetterNode *a, LetterNode *b)
     char *s1 = wordToString(a);
     char *s2 = wordToString(b);
 
-    for (int i = 0; s1[i]; i++)
-        s1[i] = tolower(s1[i]);
-    for (int i = 0; s2[i]; i++)
-        s2[i] = tolower(s2[i]);
-
     int res = strcmp(s1, s2);
 
     free(s1);
@@ -308,7 +303,7 @@ void getWord(char *msg)
 int getInsertIndex(WordNode *list)
 {
     char input[10];
-    printf("Enter Index:");
+    printf("Enter Index:\n");
     scanf(" %9s", input);
 
     for (int i = 0; input[i]; i++)
@@ -327,7 +322,7 @@ int getInsertIndex(WordNode *list)
 int getDeleteIndex(WordNode *list)
 {
     char input[10];
-    printf("Enter Index:\n");
+    printf("Enter Index:");
     scanf(" %9s", input);
 
     for (int i = 0; input[i]; i++)
@@ -355,7 +350,7 @@ int getAscOrDesc()
 int getAlphOrLen()
 {
     char input[10];
-    printf("Sort (a)lphabetically or by (l)ength?");
+    printf("Sort (a)lphabetically or by (l)ength?\n");
     scanf(" %9s", input);
 
     return (input[0] == 'l') ? 1 : 0;
@@ -385,7 +380,7 @@ int main()
             int idx = getInsertIndex(wordList);
             if (idx == -1)
             {
-                printf("Invalid index\n");
+                printf("Invalid index");
                 break;
             }
             getWord(input);
@@ -398,7 +393,7 @@ int main()
             int idx = getDeleteIndex(wordList);
             if (idx == -1)
             {
-                printf("Invalid index\n");
+                printf("Invalid index");
                 break;
             }
             deleteWord(&wordList, idx);
