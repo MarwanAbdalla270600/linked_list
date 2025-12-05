@@ -23,7 +23,7 @@ LetterNode *newLetterNode(char ch)
 
 WordNode *newWordNode(LetterNode *letters)
 {
-    WordNode *node = malloc(sizeof(WordNode) + sizeof(LetterNode));
+    WordNode *node = malloc(sizeof(WordNode));
     node->word = letters;
     node->next = NULL;
     return node;
@@ -60,64 +60,118 @@ void printWordList(WordNode *list)
     while (current != NULL)
     {
         printLetterList(current->word);
-        printf(" -> ");
+        printf(" ");
         current = current->next;
     }
     printf("\n");
 }
 
-void appendWord(WordNode *list, char *word)
+void appendWord(WordNode **list, char *word)
 {
-    WordNode *current = list;
+    LetterNode *letters = createLetterListFromString(word);
+    WordNode *newNode = newWordNode(letters);
 
+    // Fall 1: Liste ist leer → neuer Head
+    if (*list == NULL)
+    {
+        *list = newNode;
+        return;
+    }
+
+    // Fall 2: ans Ende laufen
+    WordNode *current = *list;
     while (current->next != NULL)
     {
         current = current->next;
     }
 
-    LetterNode *letterList = createLetterListFromString(word);
-    WordNode *wordNode = newWordNode(letterList);
-    current->next = wordNode;
+    current->next = newNode;
 }
 
-int insertWord(WordNode *list, char *word, int index)
+int insertWord(WordNode **list, char *word, int index)
 {
-    // 0. Sonderfall: Einfügen an Index 0
+    if (index < 0)
+        return -1;
+
+    LetterNode *letters = createLetterListFromString(word);
+    WordNode *newNode = newWordNode(letters);
+
+    // Insert at head
     if (index == 0)
-        return -1; // oder: neuen head zurückgeben
+    {
+        newNode->next = *list;
+        *list = newNode;
+        return 0;
+    }
 
-    WordNode *current = list;
+    WordNode *current = *list;
 
-    // 1. Zum Node VOR dem Einfügepunkt laufen
+    // Run to the node BEFORE insertion point
     for (int i = 0; i < index - 1; i++)
     {
-        if (current == NULL)
-            return -1; // Index out of bounds
+        if (current == NULL) // list too short
+            return -1;
 
         current = current->next;
     }
 
-    // 2. Neuen WordNode erstellen
-    LetterNode *letters = createLetterListFromString(word);
-    WordNode *newNode = newWordNode(letters);
+    if (current == NULL) // DON'T TOUCH NULL
+        return -1;
 
-    // 3. Verkettung richtig setzen
+    // Insert
     newNode->next = current->next;
     current->next = newNode;
 
     return 0;
 }
 
+int deleteWord(WordNode **list, int index)
+{
+    if (*list == NULL || index < 0)
+        return -1;
+
+    // Fall 1: Kopf löschen
+    if (index == 0)
+    {
+        *list = (*list)->next;
+        return 0;
+    }
+
+    WordNode *current = *list;
+
+    // Zu Node vor der zu löschenden Position
+    for (int i = 0; i < index - 1; i++)
+    {
+        if (current == NULL || current->next == NULL)
+            return -1; // Index out of bounds
+
+        current = current->next;
+    }
+
+    // current->next ist der zu löschende Node
+    if (current->next == NULL)
+        return -1;
+
+    // Verkettung überspringen
+    current->next = current->next->next;
+
+    return 0;
+}
+
+
+
+
 int main()
 {
-    char *hello = "Hallo";
-    LetterNode *letterList = createLetterListFromString(hello);
-    WordNode *wordList = newWordNode(letterList);
-    appendWord(wordList, "mein");
-    appendWord(wordList, "name");
-    appendWord(wordList, "ist");
-    appendWord(wordList, "Momo");
-    insertWord(wordList, "zweiter", 3);
+
+    WordNode *wordList = NULL;
+    appendWord(&wordList, "Hallo");
+    appendWord(&wordList, "mein");
+    appendWord(&wordList, "name");
+    appendWord(&wordList, "ist");
+    appendWord(&wordList, "Momo");
+
+    insertWord(&wordList, "marwan", 6);
 
     printWordList(wordList);
     return 0;
