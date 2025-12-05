@@ -10,7 +10,7 @@ typedef struct letternode
 typedef struct wordnode
 {
     LetterNode *word;
-    struct Wordnode *next;
+    struct wordnode *next;
 } WordNode;
 
 LetterNode *newLetterNode(char ch)
@@ -37,7 +37,6 @@ void printLetterList(LetterNode *list)
         printf("%c", current->letter);
         current = current->next;
     }
-    printf("\n");
 }
 
 LetterNode *createLetterListFromString(char *word)
@@ -55,10 +54,71 @@ LetterNode *createLetterListFromString(char *word)
     return head;
 }
 
+void printWordList(WordNode *list)
+{
+    WordNode *current = list;
+    while (current != NULL)
+    {
+        printLetterList(current->word);
+        printf(" -> ");
+        current = current->next;
+    }
+    printf("\n");
+}
+
+void appendWord(WordNode *list, char *word)
+{
+    WordNode *current = list;
+
+    while (current->next != NULL)
+    {
+        current = current->next;
+    }
+
+    LetterNode *letterList = createLetterListFromString(word);
+    WordNode *wordNode = newWordNode(letterList);
+    current->next = wordNode;
+}
+
+int insertWord(WordNode *list, char *word, int index)
+{
+    // 0. Sonderfall: Einfügen an Index 0
+    if (index == 0)
+        return -1; // oder: neuen head zurückgeben
+
+    WordNode *current = list;
+
+    // 1. Zum Node VOR dem Einfügepunkt laufen
+    for (int i = 0; i < index - 1; i++)
+    {
+        if (current == NULL)
+            return -1; // Index out of bounds
+
+        current = current->next;
+    }
+
+    // 2. Neuen WordNode erstellen
+    LetterNode *letters = createLetterListFromString(word);
+    WordNode *newNode = newWordNode(letters);
+
+    // 3. Verkettung richtig setzen
+    newNode->next = current->next;
+    current->next = newNode;
+
+    return 0;
+}
+
 int main()
 {
-    char *hello = "HalloWelt";
+    char *hello = "Hallo";
     LetterNode *letterList = createLetterListFromString(hello);
-    printLetterList(letterList);
+    WordNode *wordList = newWordNode(letterList);
+    appendWord(wordList, "mein");
+    appendWord(wordList, "name");
+    appendWord(wordList, "ist");
+    appendWord(wordList, "Momo");
+    insertWord(wordList, "zweiter", 3);
+
+    printWordList(wordList);
     return 0;
 }
