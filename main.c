@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_WORD_LEN 50
+#define MAX_WORD_LEN 20
 
 typedef struct letternode
 {
@@ -73,6 +73,7 @@ char *wordToString(LetterNode *letters)
         str[i] = c->letter;
         c = c->next;
     }
+
     str[len] = '\0';
     return str;
 }
@@ -88,13 +89,18 @@ void printLetterList(LetterNode *list)
 
 void printWordList(WordNode *list)
 {
+    if (!list)
+    {
+        printf("empty list");
+        return;
+    }
+
     while (list)
     {
         printLetterList(list->word);
         printf(" ");
         list = list->next;
     }
-    printf("\n");
 }
 
 LetterNode *createLetterListFromString(char *word)
@@ -131,6 +137,17 @@ void appendWord(WordNode **list, char *word)
     current->next = newNode;
 }
 
+int getListLength(WordNode *list)
+{
+    int len = 0;
+    while (list)
+    {
+        len++;
+        list = list->next;
+    }
+    return len;
+}
+
 int insertWord(WordNode **list, char *word, int index)
 {
     if (index < 0)
@@ -147,6 +164,7 @@ int insertWord(WordNode **list, char *word, int index)
     }
 
     WordNode *current = *list;
+
     for (int i = 0; i < index - 1; i++)
     {
         if (!current)
@@ -154,12 +172,8 @@ int insertWord(WordNode **list, char *word, int index)
         current = current->next;
     }
 
-    if (!current)
-        return -1;
-
     newNode->next = current->next;
     current->next = newNode;
-
     return 0;
 }
 
@@ -178,6 +192,7 @@ int deleteWord(WordNode **list, int index)
     }
 
     WordNode *current = *list;
+
     for (int i = 0; i < index - 1; i++)
     {
         if (!current || !current->next)
@@ -185,10 +200,10 @@ int deleteWord(WordNode **list, int index)
         current = current->next;
     }
 
-    if (!current->next)
+    WordNode *toDelete = current->next;
+    if (!toDelete)
         return -1;
 
-    WordNode *toDelete = current->next;
     current->next = toDelete->next;
 
     freeLetterList(toDelete->word);
@@ -207,15 +222,15 @@ int compareAlphabetical(LetterNode *a, LetterNode *b)
     for (int i = 0; s2[i]; i++)
         s2[i] = tolower(s2[i]);
 
-    int result = strcmp(s1, s2);
+    int res = strcmp(s1, s2);
 
     free(s1);
     free(s2);
 
-    return result;
+    return res;
 }
 
-int compareLength(LetterNode *a, LetterNode *b)
+int compare_length(LetterNode *a, LetterNode *b)
 {
     int lenA = 0, lenB = 0;
 
@@ -239,6 +254,7 @@ void sort(WordNode *list, int (*compare)(LetterNode *, LetterNode *), int descen
         return;
 
     int swapped;
+
     do
     {
         swapped = 0;
@@ -257,6 +273,7 @@ void sort(WordNode *list, int (*compare)(LetterNode *, LetterNode *), int descen
                 current->next->word = tmp;
                 swapped = 1;
             }
+
             current = current->next;
         }
 
@@ -269,7 +286,9 @@ char getMenu()
 
     while (1)
     {
-        if (scanf(" %9s", input) == 1 && strlen(input) == 1)
+        scanf(" %9s", input);
+
+        if (strlen(input) == 1)
         {
             char c = input[0];
 
@@ -282,42 +301,64 @@ char getMenu()
 
 void getWord(char *msg)
 {
-    printf("Enter word: ");
+    printf("Enter Word: ");
     scanf(" %49s", msg);
 }
 
-int getIndex()
+int getInsertIndex(WordNode *list)
 {
     char input[10];
-    printf("Enter index: ");
+    printf("Enter Index:");
     scanf(" %9s", input);
-    return atoi(input);
+
+    for (int i = 0; input[i]; i++)
+        if (!isdigit((unsigned char)input[i]))
+            return -1;
+
+    int index = atoi(input);
+    int length = getListLength(list);
+
+    if (index < 0 || index > length)
+        return -1;
+
+    return index;
+}
+
+int getDeleteIndex(WordNode *list)
+{
+    char input[10];
+    printf("Enter Index:\n");
+    scanf(" %9s", input);
+
+    for (int i = 0; input[i]; i++)
+        if (!isdigit((unsigned char)input[i]))
+            return -1;
+
+    int index = atoi(input);
+    int length = getListLength(list);
+
+    if (index < 0 || index >= length)
+        return -1;
+
+    return index;
 }
 
 int getAscOrDesc()
 {
     char input[10];
-    printf("Sort (a)scending or (d)escending? ");
+    printf("Sort (a)scending or (d)escending?");
     scanf(" %9s", input);
 
-    if (input[0] == 'a')
-        return 0;
-    if (input[0] == 'd')
-        return 1;
-    return -1;
+    return (input[0] == 'd') ? 1 : 0;
 }
 
 int getAlphOrLen()
 {
     char input[10];
-    printf("Sort (a)lphabetically or (l)ength? ");
+    printf("Sort (a)lphabetically or by (l)ength?");
     scanf(" %9s", input);
 
-    if (input[0] == 'a')
-        return 0;
-    if (input[0] == 'l')
-        return 1;
-    return -1;
+    return (input[0] == 'l') ? 1 : 0;
 }
 
 int main()
@@ -326,13 +367,14 @@ int main()
 
     while (1)
     {
-        printf("\nChoose action: (a)ppend, (i)nsert, (d)elete, (s)ort, (p)rint, e(x)it\n");
+        printf("\nChoose action: (a)ppend, (i)nsert, (d)elete, (s)ort, (p)rint, e(x)it:\n");
 
         char action = getMenu();
         char input[MAX_WORD_LEN];
 
         switch (action)
         {
+
         case 'a':
             getWord(input);
             appendWord(&wordList, input);
@@ -340,7 +382,12 @@ int main()
 
         case 'i':
         {
-            int idx = getIndex();
+            int idx = getInsertIndex(wordList);
+            if (idx == -1)
+            {
+                printf("Invalid index\n");
+                break;
+            }
             getWord(input);
             insertWord(&wordList, input, idx);
             break;
@@ -348,7 +395,12 @@ int main()
 
         case 'd':
         {
-            int idx = getIndex();
+            int idx = getDeleteIndex(wordList);
+            if (idx == -1)
+            {
+                printf("Invalid index\n");
+                break;
+            }
             deleteWord(&wordList, idx);
             break;
         }
@@ -357,11 +409,7 @@ int main()
         {
             int type = getAlphOrLen();
             int order = getAscOrDesc();
-
-            if (type == 0)
-                sort(wordList, compareAlphabetical, order);
-            else
-                sort(wordList, compareLength, order);
+            sort(wordList, type == 0 ? compareAlphabetical : compare_length, order);
             break;
         }
 
@@ -371,7 +419,6 @@ int main()
 
         case 'x':
             freeWordList(wordList);
-            printf("Goodbye!\n");
             return 0;
         }
     }
